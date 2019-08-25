@@ -81,7 +81,7 @@ public class Server extends NanoHTTPD {
           } else if (session.getQueryParameterString() != null) { // POST body
             request.putString("postData", session.getQueryParameterString());
           } else if (session.getParms().get("parameter") != null) { // POST request's parameters
-            request.putString("postData", session.getQueryParameterString());
+            request.putString("postData", session.getParms().get("parameter"));
           }
         }
 
