@@ -14,6 +14,11 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.Random;
 
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.io.ByteArrayInputStream;
+
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -59,11 +64,32 @@ public class Server extends NanoHTTPD {
         }
         Response response = responses.get(requestId);
         responses.remove(requestId);
+        response.addHeader("Access-Control-Allow-Origin", "*");
         return response;
     }
 
     public void respond(String requestId, int code, String type, String body) {
         responses.put(requestId, newFixedLengthResponse(Status.lookup(code), type, body));
+    }
+
+    public void respondAudio(String requestId, String url) {
+      try {
+        RandomAccessFile aFile = new RandomAccessFile(url, "r");
+        FileChannel inChannel = aFile.getChannel();
+        long fileSize = inChannel.size();
+        ByteBuffer buffer = ByteBuffer.allocate((int) fileSize);
+        inChannel.read(buffer);
+        //buffer.rewind();
+        buffer.flip();
+        for (int i = 0; i < fileSize; i++) {
+          System.out.print((char) buffer.get());
+        }
+        responses.put(requestId, newFixedLengthResponse(Status.lookup(200), MIME_PLAINTEXT, new ByteArrayInputStream(buffer.array()), fileSize));
+        inChannel.close();
+        aFile.close();
+      } catch (Exception e) {
+        Log.d(TAG, "Exception while reading audio: " + e);
+      }
     }
 
     private WritableMap fillRequestMap(IHTTPSession session, String requestId) throws Exception {

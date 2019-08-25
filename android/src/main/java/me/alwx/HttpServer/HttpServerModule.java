@@ -52,6 +52,13 @@ public class HttpServerModule extends ReactContextBaseJavaModule implements Life
         }
     }
 
+    @ReactMethod
+    public void respondAudio(String requestId, String url) {
+        if (server != null) {
+            server.respondAudio(requestId, url);
+        }
+    }
+
     @Override
     public void onHostResume() {
 
