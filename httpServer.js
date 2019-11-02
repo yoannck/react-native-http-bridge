@@ -28,5 +28,9 @@ module.exports = {
 
     respondAudio: function (requestId, url) {
         Server.respondAudio(requestId, url);
+    },
+
+    respondFile: function (requestId, path) {
+        Server.respondFile(requestId, path);
     }
 }

@@ -18,6 +18,9 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.io.ByteArrayInputStream;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -89,6 +92,60 @@ public class Server extends NanoHTTPD {
         aFile.close();
       } catch (Exception e) {
         Log.d(TAG, "Exception while reading audio: " + e);
+      }
+    }
+
+    public String getMimeType(String path) {
+      String mimetype = "text/html";
+      String[] parts = path.split("\\.");
+      String extension = parts[1];
+      if (extension.equals("css")) {
+        mimetype = "text/css";
+      } else if (extension.equals("js")) {
+        mimetype = "application/javascript";
+      } else if (extension.equals("png")) {
+        mimetype = "image/png";
+      } else if (extension.equals("jpg") || extension.equals("jpeg")) {
+        mimetype = "image/jpeg";
+      } else if (extension.equals("woff2")) {
+        mimetype = "font/woff2";
+      } else if (extension.equals("woff")) {
+        mimetype = "font/woff";
+      } else if (extension.equals("tff")) {
+        mimetype = "application/octet-stream";
+      } else if (extension.equals("mp3")) {
+        mimetype = "audio/mpeg3";
+      } else if (extension.equals("gif")) {
+        mimetype = "image/gif";
+      } else if (extension.equals("svg")) {
+        mimetype = "image/svg+xml";
+      }
+      return mimetype;
+    }
+
+    public void respondFile(String requestId, String path) {
+      try {
+        String mimetype = getMimeType(path);
+
+        if (mimetype.equals("image/png") || mimetype.equals("image/gif") || mimetype.equals("image/svg+xml")
+          || mimetype.equals("audio/mpeg3") || mimetype.equals("font/woff")
+          || mimetype.equals("image/jpeg") || mimetype.equals("font/woff2")) {
+          InputStream IS = reactContext.getResources().getAssets().open(path);
+          responses.put(requestId, newFixedLengthResponse(Status.lookup(200), mimetype, IS, IS.available()));
+        } else {
+          String answer = "";
+          InputStream IS = reactContext.getResources().getAssets().open(path);
+          BufferedReader reader = new BufferedReader(new InputStreamReader(IS, "UTF-8"));
+          String line = "";
+          while ((line = reader.readLine()) != null) {
+            answer += line;
+          }
+          reader.close();
+          responses.put(requestId, newFixedLengthResponse(Status.lookup(200), mimetype, answer));
+        }
+
+      } catch (Exception e) {
+        Log.d(TAG, "Exception: " + e);
       }
     }
 
