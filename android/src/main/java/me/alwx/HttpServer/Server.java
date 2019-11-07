@@ -127,12 +127,7 @@ public class Server extends NanoHTTPD {
       try {
         String mimetype = getMimeType(path);
 
-        if (mimetype.equals("image/png") || mimetype.equals("image/gif") || mimetype.equals("image/svg+xml")
-          || mimetype.equals("audio/mpeg3") || mimetype.equals("font/woff")
-          || mimetype.equals("image/jpeg") || mimetype.equals("font/woff2")) {
-          InputStream IS = reactContext.getResources().getAssets().open(path);
-          responses.put(requestId, newFixedLengthResponse(Status.lookup(200), mimetype, IS, IS.available()));
-        } else {
+        if (mimetype.equals("text/html")) {
           String answer = "";
           InputStream IS = reactContext.getResources().getAssets().open(path);
           BufferedReader reader = new BufferedReader(new InputStreamReader(IS, "UTF-8"));
@@ -142,6 +137,9 @@ public class Server extends NanoHTTPD {
           }
           reader.close();
           responses.put(requestId, newFixedLengthResponse(Status.lookup(200), mimetype, answer));
+        } else {
+          InputStream IS = reactContext.getResources().getAssets().open(path);
+          responses.put(requestId, newFixedLengthResponse(Status.lookup(200), mimetype, IS, IS.available()));
         }
 
       } catch (Exception e) {
